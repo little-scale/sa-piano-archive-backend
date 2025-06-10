@@ -73,6 +73,7 @@ app.get('/concerts/:id', async (req, res) => {
 
   if (!data.length) return res.status(404).json({ error: 'Concert not found' });
 
+  // Pull concert metadata from one row
   const concertMeta = data[0].concerts;
 
   const concert = {
