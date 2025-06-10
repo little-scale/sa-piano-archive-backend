@@ -62,16 +62,31 @@ app.get('/concerts/:id', async (req, res) => {
     .from('program_items')
     .select(`
       item_order,
-      concerts(id, datetime, title),
+      performers(name, nationality),
       works(title, composers(name)),
-      performers(name, nationality)
+      concerts(id, datetime, title, venues(name), organisers(name))
     `)
     .eq('concert_id', concertId)
     .order('item_order');
 
   if (error) return res.status(500).json({ error: error.message });
-  res.json(data);
+
+  if (!data.length) return res.status(404).json({ error: 'Concert not found' });
+
+  const concertMeta = data[0].concerts;
+
+  const concert = {
+    ...concertMeta,
+    program_items: data.map((item) => ({
+      item_order: item.item_order,
+      performers: item.performers,
+      works: item.works,
+    })),
+  };
+
+  res.json(concert);
 });
+
 
 app.get('/search', async (req, res) => {
   const { performer, year } = req.query;
