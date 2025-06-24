@@ -8,10 +8,14 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 
+console.log("Database URL:", process.env.DATABASE_URL);
+
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
+
+
 
 // GET /concerts
 app.get("/concerts", async (req, res) => {
