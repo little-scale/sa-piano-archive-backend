@@ -12,10 +12,10 @@ console.log("Database URL:", process.env.DATABASE_URL);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  host: 'db.wgjwdtqyogkstejatymk.supabase.co',
+  host: 'db.wgjwdtqyogkstejatymk.supabase.co', // <- required!
   port: 5432,
   ssl: { rejectUnauthorized: false },
-  family: 4 // 👈 forces IPv4
+  family: 4 // <- forces IPv4!
 });
 
 
