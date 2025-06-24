@@ -65,14 +65,17 @@ app.get("/works", async (req, res) => {
 // GET /search?q=...
 app.get("/search", async (req, res) => {
   const q = `%${req.query.q?.toLowerCase() || ""}%`;
+
   const concerts = await pool.query(
-    "SELECT * FROM concerts WHERE LOWER(venue) LIKE $1 OR LOWER(series) LIKE $1 OR LOWER(note) LIKE $1",
+    "SELECT * FROM concerts WHERE LOWER(venue) LIKE $1 OR LOWER(note) LIKE $1",
     [q]
   );
+
   const performers = await pool.query(
     "SELECT * FROM performers WHERE LOWER(performer) LIKE $1 OR LOWER(nationality) LIKE $1",
     [q]
   );
+
   const works = await pool.query(
     "SELECT * FROM works WHERE LOWER(composer) LIKE $1 OR LOWER(work_title) LIKE $1",
     [q]
@@ -84,6 +87,7 @@ app.get("/search", async (req, res) => {
     works: works.rows,
   });
 });
+
 
 app.listen(port, () => {
   console.log(`Backend server running on port ${port}`);
