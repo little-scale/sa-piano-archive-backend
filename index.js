@@ -1,16 +1,15 @@
 // index.js
-import express from "express";
-import cors from "cors";
-import pkg from "pg";
+const express = require("express");
+const cors = require("cors");
+const { Pool } = require("pg");
 
-const { Pool } = pkg;
 const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // from Render environment variable
+  connectionString: process.env.DATABASE_URL,
   ssl: { rejectUnauthorized: false },
 });
 
@@ -52,7 +51,7 @@ app.get("/performers", async (req, res) => {
 
 // GET /works
 app.get("/works", async (req, res) => {
-  const { rows } = await pool.query("SELECT * FROM works ORDER BY composer, title");
+  const { rows } = await pool.query("SELECT * FROM works ORDER BY composer, work_title");
   res.json(rows);
 });
 
@@ -72,7 +71,11 @@ app.get("/search", async (req, res) => {
     [q]
   );
 
-  res.json({ concerts: concerts.rows, performers: performers.rows, works: works.rows });
+  res.json({
+    concerts: concerts.rows,
+    performers: performers.rows,
+    works: works.rows,
+  });
 });
 
 app.listen(port, () => {
