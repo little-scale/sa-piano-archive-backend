@@ -254,7 +254,7 @@ app.get("/concert/:id", async (req, res) => {
   const concertQuery = "SELECT * FROM concerts WHERE id = $1";
   const itemsQuery = `
     SELECT pi.item_order, pi.interval_after,
-         w.work_title, w.composer,
+         w.id AS work_id, w.work_title, w.composer,
          p.performer
     FROM program_items pi
     JOIN works w ON pi.work_id = w.id
