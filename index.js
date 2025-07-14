@@ -37,6 +37,14 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
   const performerCache = new Map();
   const workCache = new Map();
 
+  let concertsAdded = 0;
+  let concertsSkipped = 0;
+  let performersAdded = 0;
+  let performersSkipped = 0;
+  let worksAdded = 0;
+  let worksSkipped = 0;
+  let programItemsAdded = 0;
+
   const parsePerformer = (performerNationality) => {
     const [performer, nationality = ''] = performerNationality.split('/').map(s => s.trim());
     return { performer, nationality };
@@ -44,57 +52,51 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
 
   const readStream = fs.createReadStream(req.file.path).pipe(csv());
 
-  
-
   for await (const row of readStream) {
     results.push(row);
   }
 
   try {
     for (const row of results) {
-      // Insert or lookup concert
+      // Concert
       const concertKey = `${row['Year/Date/Time']}-${row['Venue']}-${row['Organiser/Sponsor']}`;
       let concertId = concertCache.get(concertKey);
 
       if (!concertId) {
-        console.log("Original datetime:", row['Year/Date/Time']);
         const datetime = cleanDate(row['Year/Date/Time']);
-        console.log("Clean datetime:", datetime);
-        
-const concertResult = await pool.query(
-  `INSERT INTO concerts (datetime, concert_title, venue, organiser, note, source)
-   VALUES ($1, $2, $3, $4, $5, $6)
-   ON CONFLICT DO NOTHING
-   RETURNING id`,
-  [
-    datetime,
-    row['Concert Title'],
-    row['Venue'],
-    row['Organiser/Sponsor'],
-    row['Note'],
-    row['Source']?.trim() || 'Unknown'
-  ]
-);
+
+        const concertResult = await pool.query(
+          `INSERT INTO concerts (datetime, concert_title, venue, organiser, note, source)
+           VALUES ($1, $2, $3, $4, $5, $6)
+           ON CONFLICT DO NOTHING
+           RETURNING id`,
+          [
+            datetime,
+            row['Concert Title'],
+            row['Venue'],
+            row['Organiser/Sponsor'],
+            row['Note'],
+            row['Source']?.trim() || 'Unknown'
+          ]
+        );
 
         concertId = concertResult.rows[0]?.id;
 
         if (!concertId) {
-          // Lookup existing if conflict prevented insert
           const lookup = await pool.query(
             `SELECT id FROM concerts WHERE datetime = $1 AND venue = $2 AND organiser = $3`,
-            [
-              row['Year/Date/Time'],
-              row['Venue'],
-              row['Organiser/Sponsor']
-            ]
+            [datetime, row['Venue'], row['Organiser/Sponsor']]
           );
           concertId = lookup.rows[0].id;
+          concertsSkipped++;
+        } else {
+          concertsAdded++;
         }
 
         concertCache.set(concertKey, concertId);
       }
 
-      // Insert or lookup performer
+      // Performer
       const { performer, nationality } = parsePerformer(row['Performer/ Nationality']);
       let performerId = performerCache.get(performer);
 
@@ -114,12 +116,15 @@ const concertResult = await pool.query(
             [performer]
           );
           performerId = lookup.rows[0].id;
+          performersSkipped++;
+        } else {
+          performersAdded++;
         }
 
         performerCache.set(performer, performerId);
       }
 
-      // Insert or lookup work
+      // Work
       const workKey = `${row['Music Title']}-${row['Composer']}`;
       let workId = workCache.get(workKey);
 
@@ -139,12 +144,15 @@ const concertResult = await pool.query(
             [row['Music Title'], row['Composer']]
           );
           workId = lookup.rows[0].id;
+          worksSkipped++;
+        } else {
+          worksAdded++;
         }
 
         workCache.set(workKey, workId);
       }
 
-      // Insert program item
+      // Program Item
       const itemOrder = parseInt(row['Program Order number'].replace('Item ', '').trim(), 10);
       const intervalAfter = row['Interval Y/N'] === 'Y' ? true : null;
 
@@ -153,9 +161,19 @@ const concertResult = await pool.query(
          VALUES ($1, $2, $3, $4, $5)`,
         [concertId, performerId, workId, itemOrder, intervalAfter]
       );
+
+      programItemsAdded++;
     }
 
-    res.status(200).json({ message: 'CSV processed and data inserted.' });
+    res.status(200).json({
+      concerts_added: concertsAdded,
+      concerts_skipped: concertsSkipped,
+      performers_added: performersAdded,
+      performers_skipped: performersSkipped,
+      works_added: worksAdded,
+      works_skipped: worksSkipped,
+      program_items_added: programItemsAdded
+    });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Failed to process CSV' });
@@ -163,6 +181,7 @@ const concertResult = await pool.query(
     fs.unlinkSync(req.file.path);
   }
 });
+
 
 
 
