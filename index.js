@@ -63,7 +63,9 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
       let concertId = concertCache.get(concertKey);
 
       if (!concertId) {
+        console.log('RAW DATETIME:', row['Year/Date/Time'], '| TYPE:', typeof row['Year/Date/Time']);
         const datetime = cleanDate(row['Year/Date/Time']);
+        console.log('CLEAN DATETIME:', datetime);
 
         const concertResult = await pool.query(
           `INSERT INTO concerts (datetime, concert_title, venue, organiser, note, source)
