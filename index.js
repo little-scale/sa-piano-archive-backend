@@ -262,6 +262,23 @@ app.get("/works", async (req, res) => {
   res.json(rows);
 });
 
+app.get("/works/:id/concerts", async (req, res) => {
+    const id = req.params.id;
+    try {
+        const { rows } = await pool.query(
+            `SELECT concerts.* FROM concerts
+             JOIN program_items ON program_items.concert_id = concerts.id
+             WHERE program_items.work_id = $1`,
+            [id]
+        );
+        res.json(rows);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to fetch concerts for work' });
+    }
+});
+
+
 // GET /search?q=...
 app.get("/search", async (req, res) => {
   const q = `%${req.query.q?.toLowerCase() || ""}%`;
