@@ -196,9 +196,35 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
 
 // GET /concerts
 app.get("/concerts", async (req, res) => {
-  const { rows } = await pool.query("SELECT * FROM concerts ORDER BY datetime");
+  let query = "SELECT * FROM concerts";
+  const params = [];
+
+  if (req.query.performer) {
+    query = `
+      SELECT DISTINCT c.*
+      FROM concerts c
+      JOIN program_items pi ON pi.concert_id = c.id
+      JOIN performers p ON pi.performer_id = p.id
+      WHERE p.performer ILIKE $1
+      ORDER BY c.datetime
+    `;
+    params.push(`%${req.query.performer}%`);
+  } else if (req.query.composer) {
+    query = `
+      SELECT DISTINCT c.*
+      FROM concerts c
+      JOIN program_items pi ON pi.concert_id = c.id
+      JOIN works w ON pi.work_id = w.id
+      WHERE w.composer ILIKE $1
+      ORDER BY c.datetime
+    `;
+    params.push(`%${req.query.composer}%`);
+  }
+
+  const { rows } = await pool.query(query, params);
   res.json(rows);
 });
+
 
 // GET /concert/:id
 app.get("/concert/:id", async (req, res) => {
