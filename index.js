@@ -15,6 +15,11 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json()); // Ensure this is included to parse JSON POST bodies
 
+const cleanDate = (dirtyDate) => {
+  if (!dirtyDate) return null;
+  return dirtyDate.replace(/-/g, '-').replace(/(\d{4}-\d{2}-\d{2})-(\d{2}:\d{2})/, '$1 $2') + ':00';
+};
+
 console.log("Database URL:", process.env.DATABASE_URL);
 
 const pool = new Pool({
@@ -38,6 +43,8 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
 
   const readStream = fs.createReadStream(req.file.path).pipe(csv());
 
+  
+
   for await (const row of readStream) {
     results.push(row);
   }
@@ -49,6 +56,8 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
       let concertId = concertCache.get(concertKey);
 
       if (!concertId) {
+        const datetime = cleanDate(row['Year/Date/Time']);
+        
         const concertResult = await pool.query(
           `INSERT INTO concerts (datetime, venue, organiser, note)
            VALUES ($1, $2, $3, $4)
