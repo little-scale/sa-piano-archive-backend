@@ -50,7 +50,7 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
 
       if (!concertId) {
         const concertResult = await pool.query(
-          `INSERT INTO concerts (datetime, venue, series, note)
+          `INSERT INTO concerts (datetime, venue, organiser, note)
            VALUES ($1, $2, $3, $4)
            ON CONFLICT DO NOTHING
            RETURNING id`,
