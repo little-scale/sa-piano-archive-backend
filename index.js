@@ -61,17 +61,18 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
         const datetime = cleanDate(row['Year/Date/Time']);
         console.log("Clean datetime:", datetime);
         
-        const concertResult = await pool.query(
-          `INSERT INTO concerts (datetime, concert_title, venue, organiser, note)
-           VALUES ($1, $2, $3, $4, $5)
-           ON CONFLICT DO NOTHING
-           RETURNING id`,
+const concertResult = await pool.query(
+  `INSERT INTO concerts (datetime, concert_title, venue, organiser, note, source)
+   VALUES ($1, $2, $3, $4, $5, $6)
+   ON CONFLICT DO NOTHING
+   RETURNING id`,
   [
     datetime,
     row['Concert Title'],
     row['Venue'],
     row['Organiser/Sponsor'],
-    row['Note']
+    row['Note'],
+    row['Source']?.trim() || 'Unknown'
   ]
 );
 
