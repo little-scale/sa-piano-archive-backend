@@ -234,32 +234,7 @@ app.get("/search", async (req, res) => {
 
 
 
-app.post('/upload-csv', upload.single('file'), async (req, res) => {
-  const results = [];
 
-  fs.createReadStream(req.file.path)
-    .pipe(csv())
-    .on('data', (data) => results.push(data))
-    .on('end', async () => {
-      try {
-        for (const row of results) {
-          // 1. Insert or lookup concert
-          // 2. Insert or lookup performer
-          // 3. Insert or lookup work
-          // 4. Insert program item with IDs
-
-          // Placeholder: console.log(row); // For now
-        }
-
-        res.status(200).json({ message: 'CSV processed' });
-      } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Failed to process CSV' });
-      } finally {
-        fs.unlinkSync(req.file.path);
-      }
-    });
-});
 
 
 
