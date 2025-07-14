@@ -68,7 +68,7 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
            ON CONFLICT DO NOTHING
            RETURNING id`,
           [
-            row['Year/Date/Time'],
+            datetime,
             row['Venue'],
             row['Organiser/Sponsor or Title'],
             row['Note']
