@@ -59,10 +59,12 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
   try {
     for (const row of results) {
       // Concert
+      console.log('ping1'); 
       const concertKey = `${row['Year/Date/Time']}-${row['Venue']}-${row['Organiser/Sponsor']}`;
       let concertId = concertCache.get(concertKey);
 
       if (!concertId) {
+        console.log('ping2'); 
         console.log('RAW DATETIME:', row['Year/Date/Time'], '| TYPE:', typeof row['Year/Date/Time']);
         const datetime = cleanDate(row['Year/Date/Time']);
         console.log('CLEAN DATETIME:', datetime);
