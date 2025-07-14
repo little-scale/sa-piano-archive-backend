@@ -7,6 +7,7 @@ const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
+app.use(express.json()); // Ensure this is included to parse JSON POST bodies
 
 console.log("Database URL:", process.env.DATABASE_URL);
 
@@ -89,6 +90,25 @@ app.get("/search", async (req, res) => {
 });
 
 
+
+// POST /concerts
+app.post("/concerts", async (req, res) => {
+  const { datetime, venue, series, note } = req.body;
+
+  try {
+    const result = await pool.query(
+      "INSERT INTO concerts (datetime, venue, series, note) VALUES ($1, $2, $3, $4) RETURNING *",
+      [datetime, venue, series, note]
+    );
+    res.status(201).json(result.rows[0]);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to add concert" });
+  }
+});
+
 app.listen(port, () => {
   console.log(`Backend server running on port ${port}`);
 });
+
+
