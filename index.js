@@ -3,6 +3,12 @@ const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
 
+const multer = require('multer');
+const csv = require('csv-parser');
+const fs = require('fs');
+
+const upload = multer({ dest: 'uploads/' });
+
 const app = express();
 const port = process.env.PORT || 3000;
 
@@ -91,21 +97,34 @@ app.get("/search", async (req, res) => {
 
 
 
-// POST /concerts
-app.post("/concerts", async (req, res) => {
-  const { datetime, venue, series, note } = req.body;
+app.post('/upload-csv', upload.single('file'), async (req, res) => {
+  const results = [];
 
-  try {
-    const result = await pool.query(
-      "INSERT INTO concerts (datetime, venue, series, note) VALUES ($1, $2, $3, $4) RETURNING *",
-      [datetime, venue, series, note]
-    );
-    res.status(201).json(result.rows[0]);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: "Failed to add concert" });
-  }
+  fs.createReadStream(req.file.path)
+    .pipe(csv())
+    .on('data', (data) => results.push(data))
+    .on('end', async () => {
+      try {
+        for (const row of results) {
+          // 1. Insert or lookup concert
+          // 2. Insert or lookup performer
+          // 3. Insert or lookup work
+          // 4. Insert program item with IDs
+
+          // Placeholder: console.log(row); // For now
+        }
+
+        res.status(200).json({ message: 'CSV processed' });
+      } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to process CSV' });
+      } finally {
+        fs.unlinkSync(req.file.path);
+      }
+    });
 });
+
+
 
 app.listen(port, () => {
   console.log(`Backend server running on port ${port}`);
