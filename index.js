@@ -196,11 +196,10 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
 
 // GET /concerts
 app.get("/concerts", async (req, res) => {
-  let query = "SELECT * FROM concerts";
   const params = [];
 
   if (req.query.performer) {
-    query = `
+    const query = `
       SELECT DISTINCT c.*
       FROM concerts c
       JOIN program_items pi ON pi.concert_id = c.id
@@ -209,8 +208,12 @@ app.get("/concerts", async (req, res) => {
       ORDER BY c.datetime
     `;
     params.push(`%${req.query.performer}%`);
-  } else if (req.query.composer) {
-    query = `
+    const { rows } = await pool.query(query, params);
+    return res.json(rows);
+  }
+
+  if (req.query.composer) {
+    const query = `
       SELECT DISTINCT c.*
       FROM concerts c
       JOIN program_items pi ON pi.concert_id = c.id
@@ -219,11 +222,29 @@ app.get("/concerts", async (req, res) => {
       ORDER BY c.datetime
     `;
     params.push(`%${req.query.composer}%`);
+    const { rows } = await pool.query(query, params);
+    return res.json(rows);
   }
 
-  const { rows } = await pool.query(query, params);
+  // DEFAULT: return full concert info WITH performers and composers aggregated
+  const { rows } = await pool.query(`
+    SELECT 
+      c.id,
+      c.datetime,
+      c.venue,
+      c.organiser,
+      STRING_AGG(DISTINCT p.performer, ', ') AS performers,
+      STRING_AGG(DISTINCT w.composer, ', ') AS composers
+    FROM concerts c
+    LEFT JOIN program_items pi ON pi.concert_id = c.id
+    LEFT JOIN performers p ON pi.performer_id = p.id
+    LEFT JOIN works w ON pi.work_id = w.id
+    GROUP BY c.id
+    ORDER BY c.datetime;
+  `);
   res.json(rows);
 });
+
 
 
 // GET /concert/:id
