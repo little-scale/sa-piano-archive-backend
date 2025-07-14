@@ -80,7 +80,7 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
         if (!concertId) {
           // Lookup existing if conflict prevented insert
           const lookup = await pool.query(
-            `SELECT id FROM concerts WHERE datetime = $1 AND venue = $2 AND series = $3`,
+            `SELECT id FROM concerts WHERE datetime = $1 AND venue = $2 AND organiser = $3`,
             [
               row['Year/Date/Time'],
               row['Venue'],
