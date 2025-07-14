@@ -250,6 +250,20 @@ app.get("/concert/:id", async (req, res) => {
   res.json({ ...concert.rows[0], program: items.rows });
 });
 
+// GET /composers/:name/concerts
+app.get("/composers/:name/concerts", async (req, res) => {
+    const composer = req.params.name;
+    const { rows } = await pool.query(
+        `SELECT DISTINCT concerts.* FROM concerts
+         JOIN program_items ON program_items.concert_id = concerts.id
+         JOIN works ON program_items.work_id = works.id
+         WHERE works.composer = $1
+         ORDER BY concerts.datetime`,
+        [composer]
+    );
+    res.json(rows);
+});
+
 // GET /performers
 app.get("/performers", async (req, res) => {
   const { rows } = await pool.query("SELECT * FROM performers ORDER BY performer");
