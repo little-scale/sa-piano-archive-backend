@@ -17,7 +17,8 @@ app.use(express.json()); // Ensure this is included to parse JSON POST bodies
 
 const cleanDate = (dirtyDate) => {
   if (!dirtyDate) return null;
-  return dirtyDate.replace(/-/g, '-').replace(/(\d{4}-\d{2}-\d{2})-(\d{2}:\d{2})/, '$1 $2') + ':00';
+  // If the string has two '-' in the first 10 characters and another '-', replace the last '-' with ' '
+  return dirtyDate.replace(/^(\d{4}-\d{2}-\d{2})-(\d{2}:\d{2})$/, '$1 $2') + ':00';
 };
 
 console.log("Database URL:", process.env.DATABASE_URL);
@@ -57,6 +58,9 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
 
       if (!concertId) {
         const datetime = cleanDate(row['Year/Date/Time']);
+        
+        console.log("Original datetime:", row['Year/Date/Time']);
+        console.log("Clean datetime:", datetime);
         
         const concertResult = await pool.query(
           `INSERT INTO concerts (datetime, venue, organiser, note)
