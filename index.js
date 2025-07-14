@@ -53,7 +53,7 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
   try {
     for (const row of results) {
       // Insert or lookup concert
-      const concertKey = `${row['Year/Date/Time']}-${row['Venue']}-${row['Organiser/Sponsor or Title']}`;
+      const concertKey = `${row['Year/Date/Time']}-${row['Venue']}-${row['Organiser/Sponsor']}`;
       let concertId = concertCache.get(concertKey);
 
       if (!concertId) {
@@ -70,7 +70,7 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
     datetime,
     row['Concert Title'],
     row['Venue'],
-    row['Organiser/Sponsor or Title'],
+    row['Organiser/Sponsor'],
     row['Note']
   ]
 );
@@ -84,7 +84,7 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
             [
               row['Year/Date/Time'],
               row['Venue'],
-              row['Organiser/Sponsor or Title']
+              row['Organiser/Sponsor']
             ]
           );
           concertId = lookup.rows[0].id;
