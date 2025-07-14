@@ -21,7 +21,7 @@ const cleanDate = (dirtyDate) => {
   return dirtyDate.replace(/^(\d{4}-\d{2}-\d{2})-(\d{2}:\d{2})$/, '$1 $2') + ':00';
 };
 
-console.log("Database URL:", process.env.DATABASE_URL);
+console.log("Database URL logging:", process.env.DATABASE_URL);
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
