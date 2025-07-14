@@ -57,9 +57,8 @@ app.post('/upload-csv', upload.single('file'), async (req, res) => {
       let concertId = concertCache.get(concertKey);
 
       if (!concertId) {
-        const datetime = cleanDate(row['Year/Date/Time']);
-        
         console.log("Original datetime:", row['Year/Date/Time']);
+        const datetime = cleanDate(row['Year/Date/Time']);
         console.log("Clean datetime:", datetime);
         
         const concertResult = await pool.query(
