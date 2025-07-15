@@ -1,8 +1,11 @@
 // index.js
 
-// Basic Auth Middleware (remove later if not needed)
+const express = require('express');
+const app = express();
+
+// ✅ Basic Auth middleware AFTER app is defined
 app.use((req, res, next) => {
-  const auth = { login: 'admin', password: 'pianoarchive' }; // change this
+  const auth = { login: 'admin', password: 'pianoarchive' };
   const b64auth = (req.headers.authorization || '').split(' ')[1] || '';
   const [login, password] = Buffer.from(b64auth, 'base64').toString().split(':');
 
@@ -14,7 +17,6 @@ app.use((req, res, next) => {
   res.status(401).send('Authentication required.');
 });
 
-const express = require("express");
 const cors = require("cors");
 const { Pool } = require("pg");
 
