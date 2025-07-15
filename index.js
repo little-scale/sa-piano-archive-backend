@@ -25,8 +25,6 @@ const csv = require('csv-parser');
 const fs = require('fs');
 
 const upload = multer({ dest: 'uploads/' });
-
-const app = express();
 const port = process.env.PORT || 3000;
 
 app.use(cors());
