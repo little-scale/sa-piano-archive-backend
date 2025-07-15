@@ -3,7 +3,7 @@
 const express = require('express');
 const app = express();
 
-/* Login
+/* Auth vers
 // ✅ Basic Auth middleware AFTER app is defined
 app.use((req, res, next) => {
   const auth = { login: 'admin', password: 'pianoarchive' };
