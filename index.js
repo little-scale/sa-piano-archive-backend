@@ -3,6 +3,7 @@
 const express = require('express');
 const app = express();
 
+/* Login
 // ✅ Basic Auth middleware AFTER app is defined
 app.use((req, res, next) => {
   const auth = { login: 'admin', password: 'pianoarchive' };
@@ -16,6 +17,7 @@ app.use((req, res, next) => {
   res.set('WWW-Authenticate', 'Basic realm="Archive Backend"');
   res.status(401).send('Authentication required.');
 });
+*/
 
 const cors = require("cors");
 const { Pool } = require("pg");
